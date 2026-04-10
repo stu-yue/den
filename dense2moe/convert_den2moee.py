@@ -13,7 +13,7 @@ from sentence_transformers import SentenceTransformer, models
 from qwen3.configuration_qwen3 import Qwen3Config
 from qwen3.modeling_qwen3 import Qwen3ForCausalLM
 from den2moee.configuration_den2moee import Den2MoEEConfig
-from den2moee.modeling_den2moee import Den2MoEEModel, Den2MoEESparseMoeBlock, Den2MoEESvdMLP
+from den2moee.modeling_den2moee import Den2MoEEForCausalLM, Den2MoEESparseMoeBlock, Den2MoEESvdMLP
 
 
 def create_den2moee_config(
@@ -145,10 +145,10 @@ def convert_dense_to_den2moee(
     shared_ratio: float = 0.25,
     rank_ratio: float = 1.0,
     save_dir: str = None,
-) -> Den2MoEEModel:
+) -> Den2MoEEForCausalLM:
     device = dense_model.device
     den2moee_config = create_den2moee_config(dense_model.config, num_experts, top_k, shared_ratio=shared_ratio, rank_ratio=rank_ratio)
-    den2moee_model = Den2MoEEModel(den2moee_config).to(device)
+    den2moee_model = Den2MoEEForCausalLM(den2moee_config).to(device)
 
     # === copy non-MLP parameters ===
     state_dict = dense_model.state_dict()
@@ -265,7 +265,7 @@ def convert_dense_to_den2moee(
     return den2moee_model
 
 def save_model(
-    model: Den2MoEEModel, tokenizer: AutoTokenizer, 
+    model: Den2MoEEForCausalLM, tokenizer: AutoTokenizer, 
     output_dir: str, dense_model_path: str = None,
 ):
 
