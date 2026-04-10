@@ -126,9 +126,9 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     
     model_paths = [
-        "/root/models/Qwen3-Embedding-0.6B",
-        "/root/models/Qwen3-Embedding-4B",
-        # 例如: "/root/models/Moe2-Embedding-0.6B-init-1.0-std-1e-2"
+        # "/root/models/Qwen3-Embedding-0.6B",
+        # "/root/models/Qwen3-Embedding-4B",
+        "/root/code/output/Den2MoEE-Embedding-0.6B-svd-init-0.0-rank-0.4",
     ]
     
     all_metrics = []
