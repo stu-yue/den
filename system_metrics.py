@@ -4,7 +4,7 @@ import pandas as pd
 from transformers import AutoModel, AutoTokenizer
 
 # --- 配置 ---
-MODEL_ID = "path/to/your/model" 
+MODEL_ID = "/root/models/Qwen3-Embedding-0.6B" 
 DEVICE = "cuda"
 DTYPE = torch.float16 # 推理常用精度
 SEQ_LEN = 512
