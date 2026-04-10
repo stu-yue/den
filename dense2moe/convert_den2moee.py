@@ -142,7 +142,7 @@ def convert_dense_to_den2moee(
     num_experts: int = 8,
     top_k: int = 2,
     time_stamp: str = None,
-    shared_ratio: float = 0.25,
+    shared_ratio: float = 0.125,
     rank_ratio: float = 1.0,
     save_dir: str = None,
 ) -> Den2MoEEForCausalLM:
@@ -200,6 +200,12 @@ def convert_dense_to_den2moee(
             neuron_ids = expert_entry["cluster_neuron_ids"]
 
             if expert_type == "routed":
+                if routed_count >= len(den2moee_block.experts):
+                    raise ValueError(
+                        f"Layer {layer_idx} has more routed experts in split file than config allows: "
+                        f"routed_count={routed_count + 1}, n_routed_experts={len(den2moee_block.experts)}. "
+                        f"Please align shared_ratio with split generation."
+                    )
                 expert = den2moee_block.experts[routed_count]
                 if not isinstance(expert, Den2MoEESvdMLP):
                     expert = Den2MoEESvdMLP(den2moee_config).to(device)
