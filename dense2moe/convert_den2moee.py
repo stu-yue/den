@@ -201,6 +201,9 @@ def convert_dense_to_den2moee(
 
             if expert_type == "routed":
                 expert = den2moee_block.experts[routed_count]
+                if not isinstance(expert, Den2MoEESvdMLP):
+                    expert = Den2MoEESvdMLP(den2moee_config).to(device)
+                    den2moee_block.experts[routed_count] = expert
                 print(f"    [Expert {routed_count}] routed, {len(neuron_ids)} neurons")
 
                 # dense weights
