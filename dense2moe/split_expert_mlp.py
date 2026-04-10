@@ -2,6 +2,7 @@
 import os
 import json
 import numpy as np
+import argparse
 
 def normalize_rows(x, eps=1e-12):
     norm = np.linalg.norm(x, axis=1, keepdims=True)
@@ -197,7 +198,6 @@ def process_layer_importance(
 
 
 
-DATA_DIR = ""
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 DATA_DIR = os.path.join(HOME_DIR, "..", "output")
@@ -211,31 +211,51 @@ COVERAGE_THR=0.125
 IMPORTANCE_DIR = f"{DATA_DIR}/importances"
 OUTPUT_DIR = f"{DATA_DIR}/expert_splits"
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Split neuron importance vectors into experts.")
+    parser.add_argument("--importance_dir", type=str, default=IMPORTANCE_DIR)
+    parser.add_argument("--output_dir", type=str, default=OUTPUT_DIR)
+    parser.add_argument("--run_id", type=str, default=TIME_STAMP, help="Run id suffix used in filenames.")
+    parser.add_argument("--k", type=int, default=K)
+    parser.add_argument("--coverage_thr", type=float, default=COVERAGE_THR)
+    parser.add_argument("--coverage_top_p", type=float, default=COVERAGE_TOP_P)
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--max_iter", type=int, default=MAX_ITER)
+    return parser.parse_args()
+
+
 def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    args = parse_args()
+    os.makedirs(args.output_dir, exist_ok=True)
 
     # find files
     files = []
-    for fn in os.listdir(IMPORTANCE_DIR):
-        if fn.startswith("neuron_importance_layer") and fn.endswith(f"_{TIME_STAMP}.json"):
-            files.append(os.path.join(IMPORTANCE_DIR, fn))
+    for fn in os.listdir(args.importance_dir):
+        if not fn.startswith("neuron_importance_layer") or not fn.endswith(".json"):
+            continue
+        if args.run_id and not fn.endswith(f"_{args.run_id}.json"):
+            continue
+        files.append(os.path.join(args.importance_dir, fn))
     files = sorted(files, key=lambda x: int(os.path.basename(x).split("layer")[1].split("_")[0]))
 
     if len(files) == 0:
-        raise FileNotFoundError(f"No importance files found in {IMPORTANCE_DIR} with timestamp {TIME_STAMP}")
+        raise FileNotFoundError(
+            f"No importance files found in {args.importance_dir} with run_id '{args.run_id}'"
+        )
 
     for fpath in files:
         layer_str = os.path.basename(fpath)
         layer_id = int(layer_str.split("layer")[1].split("_")[0])
-        out_fname = os.path.join(OUTPUT_DIR, f"neuron_splits_layer{layer_id}_k{K}_{TIME_STAMP}.json")
+        out_suffix = f"_{args.run_id}" if args.run_id else ""
+        out_fname = os.path.join(args.output_dir, f"neuron_splits_layer{layer_id}_k{args.k}{out_suffix}.json")
         process_layer_importance(
             fpath,
-            k=K,
+            k=args.k,
             output_path=out_fname,
-            coverage_thr=COVERAGE_THR,
-            seed=SEED,
-            max_iter=MAX_ITER,
-            coverage_top_p=COVERAGE_TOP_P
+            coverage_thr=args.coverage_thr,
+            seed=args.seed,
+            max_iter=args.max_iter,
+            coverage_top_p=args.coverage_top_p
         )   
 
 if __name__ == "__main__":

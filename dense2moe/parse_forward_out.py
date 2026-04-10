@@ -21,6 +21,18 @@ def get_args():
     parser.add_argument('--span_size', type=int, default=64)
     parser.add_argument('--ngram', type=int, default=8)
     parser.add_argument('--stride', type=int, default=4)
+    parser.add_argument(
+        '--uniform_token_score',
+        action='store_true',
+        default=True,
+        help='If enabled, skip fine-grained scoring and set all token scores to 1 (default: enabled).',
+    )
+    parser.add_argument(
+        '--no_uniform_token_score',
+        action='store_false',
+        dest='uniform_token_score',
+        help='Disable uniform token scores and use original SCS + RSS token scoring.',
+    )
     return parser.parse_args()
 
 def calculate_scs(summed_attention, span_size=64):
@@ -95,13 +107,15 @@ def main():
     print(f"📂 Loading: {args.forward_data_file}")
     loaded_outputs = torch.load(args.forward_data_file)
     
-    print(f"🤖 Loading Model for RSS: {args.model_path}")
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_path, 
-        torch_dtype=torch.float16, 
-        device_map="auto",
-        trust_remote_code=True
-    )
+    model = None
+    if not args.uniform_token_score:
+        print(f"🤖 Loading Model for RSS: {args.model_path}")
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_path, 
+            torch_dtype=torch.float16, 
+            device_map="auto",
+            trust_remote_code=True
+        )
 
     all_results = []
     num_layers = 29 
@@ -113,21 +127,24 @@ def main():
         attn_mask = sample['attention_mask']
         domain = sample.get('domain', 'default')
         
-        scs_vector = calculate_scs(sample['last_layer_attention'], args.span_size)
-
-        num_spans = scs_vector.size(0)
-        k = max(1, num_spans // 2)
-        _, top_indices = torch.topk(scs_vector, k)
-        top_indices = top_indices.tolist()
-    
-        rss_vector = calculate_rss(model, input_ids, attn_mask, top_indices, args.span_size, args.ngram, args.stride)
-        
         seq_len = input_ids.size(0)
-        token_scores = torch.zeros(seq_len)
-        for j in range(seq_len):
-            span_idx = j // args.span_size
-            s_idx = min(span_idx, len(scs_vector) - 1)
-            token_scores[j] = 0.5 * (scs_vector[s_idx] + rss_vector[j])
+        if args.uniform_token_score:
+            token_scores = torch.ones(seq_len)
+        else:
+            scs_vector = calculate_scs(sample['last_layer_attention'], args.span_size)
+
+            num_spans = scs_vector.size(0)
+            k = max(1, num_spans // 2)
+            _, top_indices = torch.topk(scs_vector, k)
+            top_indices = top_indices.tolist()
+
+            rss_vector = calculate_rss(model, input_ids, attn_mask, top_indices, args.span_size, args.ngram, args.stride)
+
+            token_scores = torch.zeros(seq_len)
+            for j in range(seq_len):
+                span_idx = j // args.span_size
+                s_idx = min(span_idx, len(scs_vector) - 1)
+                token_scores[j] = 0.5 * (scs_vector[s_idx] + rss_vector[j])
         
         all_results.append({
             "uid": uid,

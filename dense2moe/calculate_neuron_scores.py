@@ -10,7 +10,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
 DATA_DIR = os.path.join(HOME_DIR, "..", "output")
-TIME_STAMP = ""
 GY2_PATH = os.path.join(HOME_DIR, "..", "models", "opensource")
 MODEL_PATH = os.path.join(GY2_PATH, "Qwen3-Embedding-0.6B")
 CLUSTER_FILE = os.path.join(DATA_DIR, "cluster_info.json")
@@ -20,6 +19,37 @@ OUTPUT_DIR = f"{DATA_DIR}/importances"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def parse_args():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Calculate neuron importance scores.")
+    parser.add_argument("--token_score_file", type=str, default=TOKEN_SCORE_FILE)
+    parser.add_argument("--activations_dir", type=str, default=ACTIVATIONS_DIR)
+    parser.add_argument("--output_dir", type=str, default=OUTPUT_DIR)
+    parser.add_argument("--model_path", type=str, default=MODEL_PATH)
+    parser.add_argument(
+        "--run_id",
+        type=str,
+        default="",
+        help="Optional run id/prefix. If empty, inferred from token_score_file basename.",
+    )
+    return parser.parse_args()
+
+args = parse_args()
+TOKEN_SCORE_FILE = args.token_score_file
+ACTIVATIONS_DIR = args.activations_dir
+OUTPUT_DIR = args.output_dir
+MODEL_PATH = args.model_path
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+token_basename = os.path.basename(TOKEN_SCORE_FILE)
+if token_basename.endswith("_token_scores.pt"):
+    RUN_ID = token_basename[:-len("_token_scores.pt")]
+else:
+    RUN_ID = os.path.splitext(token_basename)[0]
+if args.run_id:
+    RUN_ID = args.run_id
 
 def load_model(model_path):
     config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
@@ -37,7 +67,7 @@ num_layers = config.num_hidden_layers
 
 def load_layer_activations(layer_id):
     activations_path = os.path.join(
-        ACTIVATIONS_DIR, f"_{TIME_STAMP}_activations_layer{layer_id}.pt"
+        ACTIVATIONS_DIR, f"{RUN_ID}_activations_layer{layer_id}.pt"
     )
     if not os.path.exists(activations_path):
         return None
@@ -115,7 +145,7 @@ with torch.no_grad():
                 "domain_vector": s_hat_cpu[j]
             })
         
-        output_path = os.path.join(OUTPUT_DIR, f"neuron_importance_layer{layer_id + 1}_{TIME_STAMP}.json")
+        output_path = os.path.join(OUTPUT_DIR, f"neuron_importance_layer{layer_id + 1}_{RUN_ID}.json")
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(layer_results, f, indent=2, ensure_ascii=False)
         
