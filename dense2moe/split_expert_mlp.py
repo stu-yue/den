@@ -139,7 +139,18 @@ def process_layer_importance(
             f"Layer {layer_id} has {num_neurons} neurons, which is not divisible by k={k}."
         )
 
-    labels, centers = constrained_equal_size_kmeans(vectors, k, max_iter=max_iter, rng=rng)
+    try:
+        labels, centers = constrained_equal_size_kmeans(vectors, k, max_iter=max_iter, rng=rng)
+    except ValueError as e:
+        # Fallback: if kmeans++ init fails (e.g. NaN probabilities), use random balanced assignment.
+        if "Probabilities contain NaN" not in str(e):
+            raise
+        cap = num_neurons // k
+        perm = rng.permutation(num_neurons)
+        labels = np.empty(num_neurons, dtype=int)
+        for j in range(k):
+            labels[perm[j * cap:(j + 1) * cap]] = j
+        centers = np.zeros((k, vectors.shape[1]), dtype=float)
 
     clusters = {}
     for j in range(k):
