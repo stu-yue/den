@@ -121,6 +121,7 @@ with torch.no_grad():
                 up_act = x @ W_up.T
                 act_score = torch.abs(gate_act * up_act)
 
+                ts = ts.to(device=device, dtype=act_score.dtype)
                 weighted_sum = (ts.unsqueeze(0) @ act_score).squeeze(0)
                 domain_score = weighted_sum / x.size(0)
 
