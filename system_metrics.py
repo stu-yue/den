@@ -7,15 +7,20 @@ import sys
 from pathlib import Path
 from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, AutoConfig
 
-# 让脚本可以直接 import dense2moe/moe2 下的自定义结构
-REPO_ROOT = Path(__file__).resolve().parents[1]
-MOE2_SRC = REPO_ROOT / "dense2moe"
+# 让脚本可以直接 import dense2moe/den2moee 下的自定义结构
+SCRIPT_DIR = Path(__file__).resolve().parent
+MOE2_SRC = SCRIPT_DIR / "dense2moe"
+if not MOE2_SRC.exists():
+    raise FileNotFoundError(
+        f"未找到目录: {MOE2_SRC}"
+    )
+
 if str(MOE2_SRC) not in sys.path:
     sys.path.insert(0, str(MOE2_SRC))
 
-# 触发 AutoConfig / AutoModel / AutoModelForCausalLM 注册
-from moe2.configuration_moe2 import Moe2Config  # noqa: F401
-from moe2.modeling_moe2 import Moe2ForCausalLM  # noqa: F401
+# 触发 den2moee 的 AutoConfig / AutoModel / AutoModelForCausalLM 注册
+from den2moee.configuration_den2moee import Den2MoEEConfig  # noqa: F401
+from den2moee.modeling_den2moee import Den2MoEEForCausalLM  # noqa: F401
 
 # --- 核心配置 ---
 DEVICE = "cuda"
@@ -42,8 +47,8 @@ def benchmark_model(model_path):
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
 
-        # moe2 使用 CausalLM 接口加载，其他保持原 AutoModel 行为
-        if getattr(config, "model_type", None) == "moe2":
+        # den2moee 使用 CausalLM 接口加载，其他保持原 AutoModel 行为
+        if getattr(config, "model_type", None) == "den2moee":
             model = AutoModelForCausalLM.from_pretrained(
                 model_path,
                 config=config,
