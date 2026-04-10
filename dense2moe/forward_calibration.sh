@@ -6,10 +6,10 @@ CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((NUM_GPUS-1)))
 export CUDA_VISIBLE_DEVICES
 
 # Local workspace root
-HOME_DIR="/Users/wangyue/moe2/den"
+HOME_DIR="/root/code/den"
 WORK_DIR="${HOME_DIR}/dense2moe"
 
-MODEL_PATH="${HOME_DIR}/../models/opensource/Qwen3-Embedding-0.6B"
+MODEL_PATH="${HOME_DIR}/../../models/Qwen3-Embedding-0.6B"
 OUTPUT_DIR="${HOME_DIR}/../output"
 INPUT_FILE="${HOME_DIR}/cal_combined.jsonl"
 
