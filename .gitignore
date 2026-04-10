@@ -1,1 +1,2 @@
 outputs/*.log
+__pycache__/
