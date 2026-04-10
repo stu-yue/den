@@ -3,7 +3,19 @@ import time
 import pandas as pd
 import numpy as np
 import os
-from transformers import AutoModel, AutoTokenizer
+import sys
+from pathlib import Path
+from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, AutoConfig
+
+# 让脚本可以直接 import dense2moe/moe2 下的自定义结构
+REPO_ROOT = Path(__file__).resolve().parents[1]
+MOE2_SRC = REPO_ROOT / "dense2moe"
+if str(MOE2_SRC) not in sys.path:
+    sys.path.insert(0, str(MOE2_SRC))
+
+# 触发 AutoConfig / AutoModel / AutoModelForCausalLM 注册
+from moe2.configuration_moe2 import Moe2Config  # noqa: F401
+from moe2.modeling_moe2 import Moe2ForCausalLM  # noqa: F401
 
 # --- 核心配置 ---
 DEVICE = "cuda"
@@ -28,11 +40,23 @@ def benchmark_model(model_path):
     # 1. 静态显存加载
     try:
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = AutoModel.from_pretrained(
-            model_path, 
-            trust_remote_code=True, 
-            torch_dtype=DTYPE
-        ).to(DEVICE).eval()
+        config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
+
+        # moe2 使用 CausalLM 接口加载，其他保持原 AutoModel 行为
+        if getattr(config, "model_type", None) == "moe2":
+            model = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                config=config,
+                trust_remote_code=True,
+                torch_dtype=DTYPE,
+            ).to(DEVICE).eval()
+        else:
+            model = AutoModel.from_pretrained(
+                model_path,
+                config=config,
+                trust_remote_code=True,
+                torch_dtype=DTYPE,
+            ).to(DEVICE).eval()
     except Exception as e:
         print(f"❌ 加载模型 {model_name} 失败: {e}")
         return []
@@ -103,7 +127,8 @@ if __name__ == "__main__":
     
     model_paths = [
         "/root/models/Qwen3-Embedding-0.6B",
-        "/root/models/Qwen3-Embedding-4B"
+        "/root/models/Qwen3-Embedding-4B",
+        # 例如: "/root/models/Moe2-Embedding-0.6B-init-1.0-std-1e-2"
     ]
     
     all_metrics = []
