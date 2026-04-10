@@ -328,8 +328,9 @@ def main():
     dense_model = Qwen3ForCausalLM.from_pretrained(
         args.dense_model_path,
         torch_dtype=torch.float32,
-        device_map="auto",
     )
+    if torch.cuda.is_available():
+        dense_model = dense_model.to("cuda")
     tokenizer = AutoTokenizer.from_pretrained(args.dense_model_path)
 
     # convert to Den2MoEE model
