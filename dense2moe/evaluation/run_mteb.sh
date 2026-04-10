@@ -1,15 +1,17 @@
 export OMP_NUM_THREADS=8
 export OPENBLAS_NUM_THREADS='8'
 
-GY2_PATH=""
-MODEL_PATH=${GY2_PATH}/models/Den2MoEE-Embedding-4B/v9-20260113-213824/checkpoint-2500
+
+MODEL_PATH=/root/models/Qwen3-Embedding-0.6B
 
 # BENCHMARK="MTEB(Multilingual, v2)"
-BENCHMARK="MTEB(Code, v1)"
+# BENCHMARK="MTEB(Code, v1)"
+BENCHMARK="MTEB(Law, v1)"
 BENCHMARK_CLEAN=$(echo "$BENCHMARK" | sed 's/[ ,]/_/g')
 LOG_PATH=./logs
 BATCH_SIZE=32
-POOLER_TYPE="den2moee"
+# POOLER_TYPE="den2moee"
+POOLER_TYPE="last"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
