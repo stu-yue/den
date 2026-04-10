@@ -83,7 +83,7 @@ def benchmark_model(model_path):
                     "Static_Mem_MB": round(static_mem, 2)
                 }
                 model_results.append(res)
-                print(f"BS={bs:<5} | Latency={avg_latency:>8.2f}ms | FPS={throughput:>10.2f}")
+                print(f"BS={bs:<5} | Latency={avg_latency:>8.2f}ms | Throughput (samples/s)={throughput:>10.2f}")
 
             except RuntimeError as e:
                 if "out of memory" in str(e).lower():
