@@ -294,7 +294,7 @@ def save_model(
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
-DENSE_MODEL_PATH = os.path.join(HOME_DIR, "..", "models", "opensource", "Qwen3-Embedding-0.6B")
+DENSE_MODEL_PATH = os.path.join(HOME_DIR, "..", "..", "models", "Qwen3-Embedding-0.6B")
 EXPERT_SPLITS_DIR = os.path.join(HOME_DIR, "..", "output", "expert_splits")
 ACTIVATIONS_PATH = os.path.join(HOME_DIR, "..", "output", "activations")
 RANK_ENERGY_PATH = os.path.join(HOME_DIR, "..", "output", "svd_energy")
