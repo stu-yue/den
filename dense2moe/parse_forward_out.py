@@ -155,9 +155,17 @@ def main():
         })
 
         if 'activation' in sample:
-            for layer, act in sample['activation'].items():
-                if layer < num_layers:
-                    layer_activations[layer].append({
+            sample_activation = sample['activation']
+            if isinstance(sample_activation, dict):
+                layer_iter = sample_activation.items()
+            else:
+                # forward_calibration.py writes activations as a list by layer index
+                layer_iter = enumerate(sample_activation)
+
+            for layer, act in layer_iter:
+                layer_idx = int(layer)
+                if layer_idx < num_layers:
+                    layer_activations[layer_idx].append({
                         "uid": uid,
                         "activation": act
                     })

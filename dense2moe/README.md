@@ -13,7 +13,7 @@
 
    ```python
    python parse_forward_out.py \
-     --forward_data_file /root/output/Qwen3-Embedding-0.6B_domain_20260410_174520_forward.pt
+     --forward_data_file /root/code/output/Qwen3-Embedding-0.6B_domain_20260410_174520_forward.pt
    ```
 
    By default, `parse_forward_out.py` enables uniform token score mode
@@ -31,7 +31,7 @@
 
    ```python
    python calculate_neuron_scores.py \
-     --token_score_file /root/output/token_scores/Qwen3-Embedding-0.6B_domain_20260410_174520_forward_token_scores.pt
+     --token_score_file /root/code/output/token_scores/Qwen3-Embedding-0.6B_domain_20260410_174520_forward_token_scores.pt
    ```
 
    `calculate_neuron_scores.py` will auto-infer the same run id from `token_score_file`,
