@@ -286,11 +286,13 @@ def save_model(
         source_st = SentenceTransformer(dense_model_path)
         source_pooling = source_st._modules['1']
         word_embedding_model = models.Transformer(output_dir)
-        if word_embedding_model.get_word_embedding_dimension() != source_pooling.word_embedding_dimension:
+        target_dim = word_embedding_model.get_embedding_dimension()
+        source_dim = source_pooling.get_embedding_dimension()
+        if target_dim != source_dim:
             raise ValueError(
                 f"Embedding dimension mismatch: "
-                f"target {word_embedding_model.get_word_embedding_dimension()} vs "
-                f"source {source_pooling.word_embedding_dimension}"
+                f"target {target_dim} vs "
+                f"source {source_dim}"
             )
         st_model = SentenceTransformer(modules=[word_embedding_model, source_pooling])
         st_model.save(output_dir)
