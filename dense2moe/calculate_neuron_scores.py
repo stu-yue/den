@@ -6,12 +6,15 @@ import numpy as np
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModelForCausalLM
 
-DATA_DIR = "tmp_out"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+
+DATA_DIR = os.path.join(HOME_DIR, "..", "output")
 TIME_STAMP = ""
-GY2_PATH = ""
-MODEL_PATH = ""
-CLUSTER_FILE = ""
-TOKEN_SCORE_FILE = ""
+GY2_PATH = os.path.join(HOME_DIR, "..", "models", "opensource")
+MODEL_PATH = os.path.join(GY2_PATH, "Qwen3-Embedding-0.6B")
+CLUSTER_FILE = os.path.join(DATA_DIR, "cluster_info.json")
+TOKEN_SCORE_FILE = os.path.join(DATA_DIR, "token_scores", "model_outputs_token_scores.pt")
 ACTIVATIONS_DIR = f"{DATA_DIR}/activations"
 OUTPUT_DIR = f"{DATA_DIR}/importances"
 
@@ -31,10 +34,6 @@ def load_model(model_path):
 
 model, config = load_model(MODEL_PATH)
 num_layers = config.num_hidden_layers
-
-with open(CLUSTER_FILE, 'r', encoding='utf-8') as f:
-    cluster_info_json = json.load(f)
-
 
 def load_layer_activations(layer_id):
     activations_path = os.path.join(

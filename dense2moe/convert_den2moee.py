@@ -291,18 +291,19 @@ def save_model(
 
 
 
-GY2_PATH = ""
-DENSE_MODEL_PATH = f"{GY2_PATH}/Qwen3-Embedding-0.6B"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
-EXPERT_SPLITS_DIR = ""
-ACTIVATIONS_PATH = ""
-RANK_ENERGY_PATH = ""
+DENSE_MODEL_PATH = os.path.join(HOME_DIR, "..", "models", "opensource", "Qwen3-Embedding-0.6B")
+EXPERT_SPLITS_DIR = os.path.join(HOME_DIR, "..", "output", "expert_splits")
+ACTIVATIONS_PATH = os.path.join(HOME_DIR, "..", "output", "activations")
+RANK_ENERGY_PATH = os.path.join(HOME_DIR, "..", "output", "svd_energy")
 TIME_STAMP = ""
 NUM_EXPERTS = 8
 TOP_K = 2
 RANK_RATIO = 0.40
 
-OUTPUT_DIR = f"{GY2_PATH}/Den2MoEE-Embedding-0.6B-svd-init-0.0-rank-{RANK_RATIO}"
+OUTPUT_DIR = os.path.join(HOME_DIR, "..", "output", f"Den2MoEE-Embedding-0.6B-svd-init-0.0-rank-{RANK_RATIO}")
 
 def main():
     import argparse

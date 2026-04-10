@@ -198,6 +198,9 @@ def process_layer_importance(
 
 
 DATA_DIR = ""
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+DATA_DIR = os.path.join(HOME_DIR, "..", "output")
 TIME_STAMP = ""
 
 SEED = 12345

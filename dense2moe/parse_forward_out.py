@@ -5,11 +5,13 @@ import uuid
 from transformers import AutoModelForCausalLM
 from tqdm import tqdm
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
-OUTPUT_DIR = "tmp_out"
+OUTPUT_DIR = os.path.join(HOME_DIR, "..", "output")
 TIME_STAMP = ""
-FORWARD_DATA_FILE = f"{OUTPUT_DIR}/Qwen3-Embedding-0.6B_domain_{TIME_STAMP}_forward.pt"
-MODEL_PATH = "Qwen3-0.6B"
+FORWARD_DATA_FILE = os.path.join(OUTPUT_DIR, "model_outputs.pt")
+MODEL_PATH = os.path.join(HOME_DIR, "..", "models", "opensource", "Qwen3-Embedding-0.6B")
 
 def get_args():
     parser = argparse.ArgumentParser(description='Calculate TokenScore (SCS + RSS)')
