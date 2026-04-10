@@ -57,7 +57,7 @@ python run_mteb.py \
   --model ${MODEL_PATH} \
   --model_name ${MODEL_NAME} \
   --precision fp16 \
-  --model_kwargs "{\"max_length\": 8192, \"attn_type\": \"causal\", \"pooler_type\": \"${POOLER_TYPE}\", \"do_norm\": true, \"use_instruction\": true, \"instruction_template\": \"Instruct: {}\nQuery:\", \"instruction_dict_path\": \"task_prompts.json\", \"attn_implementation\":\"flash_attention_2\"}" \
+  --model_kwargs "{\"max_length\": 8192, \"attn_type\": \"causal\", \"pooler_type\": \"${POOLER_TYPE}\", \"do_norm\": true, \"use_instruction\": true, \"instruction_template\": \"Instruct: {}\nQuery:\", \"instruction_dict_path\": \"task_prompts.json\", \"attn_implementation\":\"sdpa\"}" \
   --run_kwargs "{\"save_predictions\": \"true\"}" \
   --output_dir results/${MODEL_NAME} \
   --batch_size ${BATCH_SIZE} \
